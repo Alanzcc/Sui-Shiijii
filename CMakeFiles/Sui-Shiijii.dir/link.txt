@@ -1,0 +1,1 @@
+clang++ -Wall -Wextra -pedantic -g "CMakeFiles/Sui-Shiijii.dir/src/main.cpp.o" "CMakeFiles/Sui-Shiijii.dir/src/glad.c.o" "CMakeFiles/Sui-Shiijii.dir/src/stb.cpp.o" "CMakeFiles/Sui-Shiijii.dir/lib/VBO.cpp.o" "CMakeFiles/Sui-Shiijii.dir/lib/EBO.cpp.o" "CMakeFiles/Sui-Shiijii.dir/lib/VAO.cpp.o" -o bins/Sui-Shiijii  -lglfw 

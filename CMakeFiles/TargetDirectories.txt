@@ -1,0 +1,3 @@
+/home/seth/Progetti/Sui-Shiijii/CMakeFiles/Sui-Shiijii.dir
+/home/seth/Progetti/Sui-Shiijii/CMakeFiles/edit_cache.dir
+/home/seth/Progetti/Sui-Shiijii/CMakeFiles/rebuild_cache.dir
