@@ -18,6 +18,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 
-add_executable(${project} src/main.cpp src/glad.c src/stb.cpp lib/VBO.cpp lib/EBO.cpp lib/VAO.cpp)
+add_executable(${project} src/main.cpp src/glad.c src/stb.cpp
+)
 target_include_directories(${project} PRIVATE include lib)
 target_link_libraries(${project} glfw)
