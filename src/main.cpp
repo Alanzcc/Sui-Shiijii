@@ -8,10 +8,6 @@
 
 #include "Shader.h"
 #include "Camera.h"
-#include "VAO.h"
-#include "VBO.h"
-#include "EBO.h"
-#include "Vertex.h"
 
 #include <iostream>
 
