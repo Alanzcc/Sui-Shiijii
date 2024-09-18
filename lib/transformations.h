@@ -14,4 +14,5 @@ glm::vec4 applyRotationX(const glm::vec3& vec, float angle);
 glm::vec4 applyRotationY(const glm::vec3& vec, float angle);
 glm::vec4 applyRotationZ(const glm::vec3& vec, float angle);
 
-
+//função de transformação espaço mundo -> espaço câmera via matriz de visualização	
+glm::mat4 GetViewMatrix();
