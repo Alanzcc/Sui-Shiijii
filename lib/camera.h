@@ -61,10 +61,36 @@ public:
     }
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    glm::mat4 GetViewMatrix()
-    {
-        return glm::lookAt(Position, Position + Front, Up);
-    }
+    //glm::mat4 GetViewMatrix()
+   // {
+   //     return glm::lookAt(Position, Position + Front, Up);
+   // }
+
+    //Função de transformação espaço mundo -> espaço câmera via matriz de visualização
+    glm::mat4 GetViewMatrix() {
+        glm::vec3 right = glm::normalize(glm::cross(Front, WorldUp));
+        glm::vec3 cameraUp = glm::cross(right, Front);
+
+        //matriz de visualização
+        glm::mat4 viewMatrix = glm::mat4(1.0f);
+        viewMatrix[0][0] = right.x;
+        viewMatrix[1][0] = right.y;
+        viewMatrix[2][0] = right.z;
+
+        viewMatrix[0][1] = cameraUp.x;
+        viewMatrix[1][1] = cameraUp.y;
+        viewMatrix[2][1] = cameraUp.z;
+
+        viewMatrix[0][2] = -Front.x;
+        viewMatrix[1][2] = -Front.y;
+        viewMatrix[2][2] = -Front.z;
+
+        viewMatrix[3][0] = -glm::dot(right, Position);
+        viewMatrix[3][1] = -glm::dot(cameraUp, Position);
+        viewMatrix[3][2] = glm::dot(Front, Position);
+
+    return viewMatrix;
+} //isso é o mesmo que glm::lookAt(cameraPos, cameraFront, cameraUp);
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
