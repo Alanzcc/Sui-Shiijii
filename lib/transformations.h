@@ -67,4 +67,18 @@ glm::vec4 applyRotationZ(const glm::vec3& vec, float angle) {
     return rotationMatrix * glm::vec4(vec, 1.0f);
 }
 
+
+//Função para calcular a matriz de projeção perspectiva
+glm::mat4 GetProjectionMatrix(float fovy, float aspectRatio, float near, float far) {
+    float fy = 1.0f / tan(glm::radians(fovy) / 2.0f);
+    glm::mat4 projectionMatrix = glm::mat4(0.0f);
+    projectionMatrix[0][0] = fy / aspectRatio;
+    projectionMatrix[1][1] = fy;
+    projectionMatrix[2][2] = -(far + near) / (far - near);
+    projectionMatrix[2][3] = -1.0f;
+    projectionMatrix[3][2] = -(2.0f * far * near) / (far - near);
+
+    return projectionMatrix;
+}
+
 #endif
