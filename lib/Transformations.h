@@ -75,8 +75,8 @@ glm::mat4 GetProjectionMatrix(float fovy, float aspectRatio, float near, float f
     projectionMatrix[0][0] = fy / aspectRatio;
     projectionMatrix[1][1] = fy;
     projectionMatrix[2][2] = -(far + near) / (far - near);
-    projectionMatrix[2][3] = -1.0f;
-    projectionMatrix[3][2] = -(2.0f * far * near) / (far - near);
+    projectionMatrix[2][3] =  -(2.0f * far * near) / (far - near);
+    projectionMatrix[3][2] = -1.0f;
 
     return projectionMatrix;
 }
