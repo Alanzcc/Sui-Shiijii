@@ -21,9 +21,9 @@ class ObjRenderer {
       glm::vec3 specular;
       float shininess;
 
-  ObjRenderer(const char* objPath, const char* texturePath, glm::vec3 specular, float shininess)
+  ObjRenderer(const std::string &objPath, const std::string &texturePath, glm::vec3 specular, float shininess)
    {
-      data = loadObj(objPath);
+      data = loadObj(objPath.c_str());
       for (auto vert : data) {
           vertices.push_back(vert.position.x);
           vertices.push_back(vert.position.y);
@@ -35,7 +35,7 @@ class ObjRenderer {
           vertices.push_back(vert.texcoord.y);
       }
 
-      texture = loadTexture(texturePath);
+      texture = loadTexture(texturePath.c_str());
       setupMesh();
   }
 

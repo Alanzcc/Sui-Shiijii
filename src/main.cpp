@@ -40,10 +40,6 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
     // glfw window creation
     // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -78,13 +74,13 @@ int main()
     glEnable(GL_CULL_FACE);
     // build and compile shaders
     // -------------------------
-    Shader ourShader("../shaders/model_loading.vert", "../shaders/model_loading.frag");
+    Shader ourShader("/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.vert", "/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.frag");
 
     // load models
     // -----------
     ObjRenderer backpack(
-        "../objects/backpack/backpack.obj",
-        "../objects/backpack/diffuse.jpg",
+        "/home/seth/Progetti/Sui-Shiijii/objects/backpack/backpack.obj",
+        "/home/seth/Progetti/Sui-Shiijii/textures/awesomeface.png",
         glm::vec3(0.5, 0.7, 0.3),
         30);
 
@@ -127,7 +123,7 @@ int main()
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::scale(model, glm::vec3(0.1f,  0.1f, 0.1f));	// it's a bit too big for our scene, so scale it down
         ourShader.setMat4("model", model);
         backpack.render(ourShader);
 

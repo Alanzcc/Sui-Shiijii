@@ -1,19 +1,19 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <vector>
-#include <sstream>
-#include <algorithm>
+//STD Libs
+#include<iostream>
+#include<string>
+#include<fstream>
+#include<vector>
+#include<sstream>
 
-#include <GLFW/glfw3.h>
+//OpenGL Math libs
+#include<glm/glm.hpp>
+#include<glm/vec3.hpp>
+#include<glm/vec4.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "Vertex.h"
+//Own libs
+#include"Vertex.h"
 
 static std::vector<Vertex> loadObj(const char* file_name)
 {
