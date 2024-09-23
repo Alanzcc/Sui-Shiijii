@@ -115,15 +115,17 @@ int main()
         ourShader.use();
 
         // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        //glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = GetProjectionMatrix(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.1f,  0.1f, 0.1f));	// it's a bit too big for our scene, so scale it down
+        model = applyTranslation(model, 0.0f, 0.0f, 0.0f); // translate it down so it's at the center of the scene
+        model = applyScale(model, 0.1f,  0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
+        model = applyRotationZ(model, 180);
         ourShader.setMat4("model", model);
         backpack.render(ourShader);
 
