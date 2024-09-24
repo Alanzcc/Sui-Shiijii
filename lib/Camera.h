@@ -26,6 +26,11 @@ const float ZOOM        =  45.0f;
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
+    private:
+    float initialZ; // Initial Z position
+    float maxBackwardDistance; // Maximum distance camera can move backward
+    float minX; // Minimum x boundary
+    float maxX; // Maximum x boundary
 public:
     // camera Attributes
     glm::vec3 Position;
@@ -42,7 +47,10 @@ public:
     float Zoom;
 
     // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+        float yaw = YAW, float pitch = PITCH, float minX = -5.0f, float maxX = 5.0f, float maxBackwardDistance = 5.0f) :
+        Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY),
+        Zoom(ZOOM), minX(minX), maxX(maxX), maxBackwardDistance(maxBackwardDistance)
     {
         Position = position;
         WorldUp = up;
@@ -51,7 +59,10 @@ public:
         updateCameraVectors();
     }
     // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch,
+        float minX = -5.0f, float maxX = 5.0f, float maxBackwardDistance = 5.0f) :
+        Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY),
+        Zoom(ZOOM), minX(minX), maxX(maxX), maxBackwardDistance(maxBackwardDistance)
     {
         Position = glm::vec3(posX, posY, posZ);
         WorldUp = glm::vec3(upX, upY, upZ);
@@ -92,15 +103,36 @@ public:
     // windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
+        float currentY = Position.y;
         float velocity = MovementSpeed * deltaTime;
+
         if (direction == FORWARD)
             Position += Front * velocity;
+
         if (direction == BACKWARD)
-            Position -= Front * velocity;
-        if (direction == LEFT)
-            Position -= Right * velocity;
-        if (direction == RIGHT)
-            Position += Right * velocity;
+        {
+            // Calculate potential new Z position
+            float newZ = Position.z - Front.z * velocity;  // Subtract because moving backward
+            // Calculate the limit position
+            float limitZ = initialZ - maxBackwardDistance;
+
+            // Clamp newZ within bounds
+            Position.z = glm::clamp(newZ, limitZ, initialZ);
+        }
+
+        if (direction == LEFT) {
+            // Calculate the new position
+            float newX = Position.x - Right.x * velocity;
+            // Clamp newX within bounds
+            Position.x = glm::clamp(newX, minX, maxX);
+        }
+
+        if (direction == RIGHT) {
+            // Calculate the new position
+            float newX = Position.x + Right.x * velocity;
+            // Clamp newX within bounds
+            Position.x = glm::clamp(newX, minX, maxX);
+        }
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.

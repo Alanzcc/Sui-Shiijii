@@ -32,6 +32,15 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+float playerPosZ = 0.0f; // Player's Z position
+bool playerMovedDuringRed = false;
+bool gameOver = false;
+bool gameWon = false;
+bool isRedPhase = false;
+float gameTime = 0.0f;
+const float redTime = 10.0f;
+const float finishLineZ = -20.0f;
+
 int main()
 {
     // glfw: initialize and configure
@@ -81,7 +90,6 @@ int main()
         "/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.frag");
 
     // load models
-    // -----------
     ObjRenderer backpack(
         "/home/seth/Progetti/Sui-Shiijii/objects/backpack/backpack.obj",
         "/home/seth/Progetti/Sui-Shiijii/objects/backpack/diffuse.jpg",
@@ -90,16 +98,25 @@ int main()
     backpackShader.use();
     backpackShader.setInt("material.diffuse", 0);
 
-    ObjRenderer floor(
-        "/home/seth/Progetti/Sui-Shiijii/objects/grass.obj",
-        "/home/seth/Progetti/Sui-Shiijii/textures/tileable_concrete_tiles_texture-1500331845.jpg",
-        glm::vec3(0.5, 0.7, 0.3),
-        30);
-    floorShader.use();
-    floorShader.setInt("material.diffuse", 0);
-
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
+
+    // Vertex data for a floor plane (a rectangle)
+    // Positions            // Normals        // Texture Coords
+    float tiles[] = {
+        // Positions        // Normals         // Texture Coords
+        -1.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
+         1.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
+         1.0f, 0.0f,  1.0f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f, // Top-right
+        -1.0f, 0.0f,  1.0f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f  // Top-left
+    };
+
+    // Indices for the plane (two triangles)
+    unsigned int indices[] = {
+        0, 1, 2, // First triangle
+        0, 2, 3  // Second triangle
+    };
+
     float vertices[] = {
         // positions          // normals           // texture coords
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
@@ -190,8 +207,39 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+        // Floor setup
+    unsigned int floorVBO, floorVAO, floorEBO;
+    glGenVertexArrays(1, &floorVAO);
+    glGenBuffers(1, &floorVBO);
+    glGenBuffers(1, &floorEBO);
+
+    // Bind the floor VAO
+    glBindVertexArray(floorVAO);
+
+    // Bind and set floor VBO and EBO
+    glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(tiles), tiles, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Set vertex attributes for position, normal, and texture coordinates
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // Unbind VAO
+    glBindVertexArray(0);
+
+
+
+
     // load textures (we now use a utility function to keep the code more organized)
     // -----------------------------------------------------------------------------
+    unsigned int floorTex = ObjRenderer::loadTexture("/home/seth/Progetti/Sui-Shiijii/textures/tileable_concrete_tiles_texture-1500331845.jpg");
     unsigned int diffuseMap = ObjRenderer::loadTexture("/home/seth/Progetti/Sui-Shiijii/textures/container2.png");
     unsigned int specularMap = ObjRenderer::loadTexture("/home/seth/Progetti/Sui-Shiijii/textures/container2_specular.png");
 
@@ -201,8 +249,14 @@ int main()
     lightingShader.setInt("material.diffuse", 0);
     lightingShader.setInt("material.specular", 1);
 
+
+
+
+
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
 
     float timePassed = 0.0f;
     float interval = 10.0f;  // Total cycle time (7 seconds normal, 3 seconds red)
@@ -219,7 +273,7 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        timePassed = fmod(currentFrame, interval);
+        gameTime += deltaTime;
 
 
         // input
@@ -228,16 +282,51 @@ int main()
 
         // render
         // ------
-        if (timePassed < redTimeDuration) {
-            glClearColor(0.39f, 0.1f, 0.88f, 0.19f);
+        if (fmod(gameTime, redTime * 2.0f) < redTime) {
+            isRedPhase = false;
+            glClearColor(0.5f, 0.7f, 1.0f, 1.0f); // Blue sky
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            isRed = true;
-        }
-        else {
-            glClearColor(0.0f, 0.7f, 0.88f, 0.7f);
+        } else {
+            isRedPhase = true;
+            glClearColor(1.0f, 0.0f, 0.0f, 1.0f); // Red sky
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            isRed = false;
         }
+
+        // Check game over state
+        if (playerMovedDuringRed) {
+            gameOver = true;
+            std::cout << "You lost!" << std::endl;
+            break;
+        }
+
+        if (playerPosZ <= finishLineZ) {
+            gameWon = true;
+            std::cout << "You won!" << std::endl;
+            break;
+        }
+        // Render the floor
+        floorShader.use();
+
+        // Set transformation matrices for the floor
+        glm::mat4 model = glm::mat4(1.0f);  // Identity matrix for the floor
+        model = glm::scale(model, glm::vec3(10.0f, 1.0f, 10.0f)); // Scale the floor
+        model = glm::translate(model, glm::vec3(1.0f, -3.0, 1.0f));
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        floorShader.setMat4("model", model);
+        floorShader.setMat4("view", view);
+        floorShader.setMat4("projection", projection);
+
+        // Bind floor texture if necessary
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, floorTex);  // Assuming you want to apply a texture to the floor
+
+        // Draw the floor
+        glBindVertexArray(floorVAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+
 
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
@@ -314,36 +403,33 @@ int main()
         lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
         lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
+
         // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
+        //glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+       // glm::mat4 view = camera.GetViewMatrix();
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat4("view", view);
+
         backpackShader.setMat4("projection", projection);
         backpackShader.setMat4("view", view);
 
         // world transformation
-        glm::mat4 model = glm::mat4(1.0f);
+        // glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         lightingShader.setMat4("model", model);
 
-        glm::mat4 floorModel = glm::mat4(1.0f);
-        floorModel = glm::translate(floorModel, glm::vec3(1.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        floorModel = glm::scale(floorModel, glm::vec3(5.1f, 5.1f, 5.1f));
-        floorShader.setMat4("model", floorModel);
-        floor.render(floorShader);
-
         glm::mat4 backpackModel = glm::mat4(1.0f);
         backpackModel = glm::translate(backpackModel, glm::vec3(1.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        if(isRed==true)
+        if (isRed==true)
             backpackModel = applyRotationY(backpackModel, 60.0);
         backpackModel = glm::scale(backpackModel, glm::vec3(0.1f, 0.1f, 0.1f));
 
         backpackShader.setMat4("model", backpackModel);
         backpack.render(backpackShader);
 
-
+        // render containers
+        glBindVertexArray(cubeVAO);
         // bind diffuse map
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
@@ -351,8 +437,7 @@ int main()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specularMap);
 
-        // render containers
-        glBindVertexArray(cubeVAO);
+
         for (unsigned int i = 0; i < 10; i++)
         {
             // calculate the model matrix for each object and pass it to shader before drawing
@@ -408,8 +493,13 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        if (isRedPhase) {
+            playerMovedDuringRed = true; // Player moved during the red phase
+        }
+        playerPosZ -= 0.05f; // Move forward in Z direction
         camera.ProcessKeyboard(FORWARD, deltaTime);
+    }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.ProcessKeyboard(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
