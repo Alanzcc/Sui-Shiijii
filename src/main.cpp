@@ -71,11 +71,13 @@ int main()
     //glEnable(GL_CULL_FACE);
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader lightingShader("/home/seth/Progetti/Sui-Shiijii/shaders/multiple_lights.vert",
-        "/home/seth/Progetti/Sui-Shiijii/shaders/multiple_lights.frag");
+    Shader lightingShader("/home/seth/Progetti/Sui-Shiijii/shaders/light_casters.vert",
+        "/home/seth/Progetti/Sui-Shiijii/shaders/light_casters.frag");
     Shader lightCubeShader("/home/seth/Progetti/Sui-Shiijii/shaders/light_cube.vert",
         "/home/seth/Progetti/Sui-Shiijii/shaders/light_cube.frag");
     Shader backpackShader("/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.vert",
+        "/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.frag");
+    Shader floorShader("/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.vert",
         "/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.frag");
 
     // load models
@@ -83,11 +85,18 @@ int main()
     ObjRenderer backpack(
         "/home/seth/Progetti/Sui-Shiijii/objects/backpack/backpack.obj",
         "/home/seth/Progetti/Sui-Shiijii/objects/backpack/diffuse.jpg",
-        "/home/seth/Progetti/Sui-Shiijii/objects/backpack/specular.jpg",
         glm::vec3(0.5, 0.7, 0.3),
         30);
     backpackShader.use();
     backpackShader.setInt("material.diffuse", 0);
+
+    ObjRenderer floor(
+        "/home/seth/Progetti/Sui-Shiijii/objects/grass.obj",
+        "/home/seth/Progetti/Sui-Shiijii/textures/tileable_concrete_tiles_texture-1500331845.jpg",
+        glm::vec3(0.5, 0.7, 0.3),
+        30);
+    floorShader.use();
+    floorShader.setInt("material.diffuse", 0);
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -195,6 +204,11 @@ int main()
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    float timePassed = 0.0f;
+    float interval = 10.0f;  // Total cycle time (7 seconds normal, 3 seconds red)
+    float redTimeDuration = 3.0f;
+    bool isRed = false;
+    glfwSetTime(4);
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -205,19 +219,44 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        timePassed = fmod(currentFrame, interval);
+
+
         // input
         // -----
         processInput(window);
 
         // render
         // ------
-        glClearColor(0.0f, 0.7f, 0.88f, 0.7f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        if (timePassed < redTimeDuration) {
+            glClearColor(0.39f, 0.1f, 0.88f, 0.19f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            isRed = true;
+        }
+        else {
+            glClearColor(0.0f, 0.7f, 0.88f, 0.7f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            isRed = false;
+        }
 
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
+        lightingShader.setVec3("light.position", camera.Position);
+        lightingShader.setVec3("light.direction", camera.Front);
+        lightingShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+        lightingShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
         lightingShader.setVec3("viewPos", camera.Position);
+        // light properties
+        lightingShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+        // we configure the diffuse intensity slightly higher; the right lighting conditions differ with each lighting method and environment.
+        // each environment and lighting type requires some tweaking to get the best out of your environment.
+        lightingShader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
+        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setFloat("light.constant", 1.0f);
+        lightingShader.setFloat("light.linear", 0.09f);
+        lightingShader.setFloat("light.quadratic", 0.032f);
+
+        // material properties
         lightingShader.setFloat("material.shininess", 32.0f);
 
         /*
@@ -289,11 +328,21 @@ int main()
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         lightingShader.setMat4("model", model);
 
+        glm::mat4 floorModel = glm::mat4(1.0f);
+        floorModel = glm::translate(floorModel, glm::vec3(1.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        floorModel = glm::scale(floorModel, glm::vec3(5.1f, 5.1f, 5.1f));
+        floorShader.setMat4("model", floorModel);
+        floor.render(floorShader);
+
         glm::mat4 backpackModel = glm::mat4(1.0f);
         backpackModel = glm::translate(backpackModel, glm::vec3(1.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        if(isRed==true)
+            backpackModel = applyRotationY(backpackModel, 60.0);
         backpackModel = glm::scale(backpackModel, glm::vec3(0.1f, 0.1f, 0.1f));
+
         backpackShader.setMat4("model", backpackModel);
         backpack.render(backpackShader);
+
 
         // bind diffuse map
         glActiveTexture(GL_TEXTURE0);
@@ -310,7 +359,8 @@ int main()
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            model = applyRotationZ(model, currentFrame);
+            //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             lightingShader.setMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
