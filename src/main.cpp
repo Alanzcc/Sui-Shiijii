@@ -117,26 +117,47 @@ int main()
     // Vertex data for a wall plane
     // Positions            // Normals        // Texture Coords
     float wall[] = {
-        -1.0f, 0.0f, 0.0f,    0.0f, 0.0f, 1.0f,  0.0f, 0.0f, // Bottom-left
-         1.0f, 0.0f, 0.0f,    0.0f, 0.0f, 1.0f,  1.0f, 0.0f, // Bottom-right
-         1.0f, 1.0f, 0.0f,    0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // Top-right
-        -1.0f, 1.0f, 0.0f,    0.0f, 0.0f, 1.0f,  0.0f, 1.0f  // Top-left
+// Combined vertex data for all four walls (positions, normals, texture coordinates)
+    // Front wall (4 vertices)
+    -1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,  // Bottom-left
+     1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f,  // Bottom-right
+     1.0f, 2.0f,  1.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,  // Top-right
+    -1.0f, 2.0f,  1.0f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f,  // Top-left
 
-        -5.0f, 0.0f,  5.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
-        -5.0f, 0.0f, -5.0f,   1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
-        -5.0f, 5.0f, -5.0f,   1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // Top-right
-        -5.0f, 5.0f,  5.0f,   1.0f, 0.0f, 0.0f,  0.0f, 1.0f,  // Top-left
+    // Left wall (4 vertices)
+    -1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+    -1.0f, 0.0f,  1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+    -1.0f, 2.0f,  1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 1.0f,  // Top-right
+    -1.0f, 2.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, 1.0f,  // Top-left
 
-        5.0f, 0.0f, -5.0f,  -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
-        5.0f, 0.0f,  5.0f,  -1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
-        5.0f, 5.0f,  5.0f,  -1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // Top-right
-        5.0f, 5.0f, -5.0f,  -1.0f, 0.0f, 0.0f,  0.0f, 1.0f  // Top-left
+    // Right wall (4 vertices)
+     1.0f, 0.0f,  1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+     1.0f, 0.0f, -1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+     1.0f, 2.0f, -1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,  // Top-right
+     1.0f, 2.0f,  1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,  // Top-left
 
-        -5.0f, 0.0f, -5.0f,   0.0f, 0.0f, -1.0f,  0.0f, 0.0f, // Bottom-left
-        5.0f, 0.0f, -5.0f,   0.0f, 0.0f, -1.0f,  1.0f, 0.0f, // Bottom-right
-        5.0f, 5.0f, -5.0f,   0.0f, 0.0f, -1.0f,  1.0f, 1.0f, // Top-right
-        -5.0f, 5.0f, -5.0f,   0.0f, 0.0f, -1.0f,  0.0f, 1.0f,  // Top-left
-    };
+    // Back wall (4 vertices)
+    -1.0f, 0.0f, -1.0f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f,  // Bottom-left
+     1.0f, 0.0f, -1.0f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f,  // Bottom-right
+     1.0f, 2.0f, -1.0f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f,  // Top-right
+    -1.0f, 2.0f, -1.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f   // Top-left
+};
+
+// Combined index data for all four walls (6 indices per wall, 2 triangles per wall)
+unsigned int wallIndices[] = {
+    // Front wall
+    0, 1, 2, 0, 2, 3,
+
+    // Left wall
+    4, 5, 6, 4, 6, 7,
+
+    // Right wall
+    8, 9, 10, 8, 10, 11,
+
+    // Back wall
+    12, 13, 14, 12, 14, 15
+};
+
     // Vertex data for a floor plane
     float tiles[] = {
         -1.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
@@ -203,23 +224,23 @@ int main()
     };
     // positions all containers
     glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
-        glm::vec3( 2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3( -1.0f,  -0.7f,  0.0f),
+        glm::vec3( 1.0f,  -0.6f, -15.0f),
+        glm::vec3(-1.0f, 0.3f, 0.5f),
         glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f,  2.0f, -2.5f),
-        glm::vec3( 1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
+        glm::vec3( 2.4f, -1.4f, -3.5f),
+        glm::vec3(-1.7f,  1.0f, -7.5f),
+        glm::vec3( 2.3f, -1.0f, -4.5f),
+        glm::vec3( 1.5f,  1.0f, -2.5f),
+        glm::vec3( 1.5f,  1.2f, -1.5f),
+        glm::vec3(-2.3f,  0.0f, -1.5f)
     };
     // positions of the point lights
     glm::vec3 pointLightPositions[] = {
         glm::vec3( 1.0f,  2.0f,  2.0f),
         glm::vec3( 2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f,  2.0f, -12.0f),
-        glm::vec3( 0.0f,  0.0f, -3.0f)
+        glm::vec3(-3.0f,  2.0f, -7.0f),
+        glm::vec3( 3.0f,  5.0f, -3.0f)
     };
 
     //----------------------------------------------------------------------------------------------------------
@@ -289,10 +310,10 @@ int main()
 
     // Bind and set wall VBO and EBO
     glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(tiles), tiles, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(wall), wall, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wallEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wallIndices), wallIndices, GL_STATIC_DRAW);
 
     // Set vertex attributes for position, normal, and texture coordinates
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -327,8 +348,7 @@ int main()
 
 
 
-    float timePassed = 0.0f;
-    float interval = 10.0f;  // Total cycle time (7 seconds normal, 3 seconds red)
+
     float redTimeDuration = 3.0f;
     bool isRed = false;
     glfwSetTime(4);
@@ -386,14 +406,7 @@ int main()
         floorShader.setMat4("view", view);
         floorShader.setMat4("projection", projection);
 
-        // Bind floor texture if necessary
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, floorTex);  // Assuming you want to apply a texture to the floor
 
-        // Draw the floor
-        glBindVertexArray(floorVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
 
                 // be sure to activate shader when setting uniforms/drawing objects
         floorShader.use();
@@ -436,7 +449,7 @@ int main()
         floorShader.setFloat("pointLights[0].quadratic", 0.032f);
         // point light 2
         floorShader.setVec3("pointLights[1].position", pointLightPositions[1]);
-        floorShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+        floorShader.setVec3("pointLights[1].ambient", 1.05f, 1.05f, 1.05f);
         floorShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
         floorShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
         floorShader.setFloat("pointLights[1].constant", 1.0f);
@@ -471,6 +484,14 @@ int main()
         floorShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
 
+        // Bind floor texture if necessary
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, floorTex);  // Assuming you want to apply a texture to the floor
+
+        // Draw the floor
+        glBindVertexArray(floorVAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
 
 
@@ -483,9 +504,9 @@ int main()
 
         // Set transformation matrices for the wall
         model = glm::mat4(1.0f);  // Identity matrix for the wall
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)); // Scale the wall
-        model = applyRotationX(model, 90);
-        model = glm::translate(model, glm::vec3(0.0f, -2.0, -0.5f));
+        model = glm::scale(model, glm::vec3(11.0f, 11.0f, 11.0f)); // Scale the wall
+
+        model = glm::translate(model, glm::vec3(0.0f,  -1.0, -0.5f));
         wallShader.setMat4("model", model);
         wallShader.setMat4("view", view);
         wallShader.setMat4("projection", projection);
@@ -495,9 +516,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, wallTex);  // Assuming you want to apply a texture to the wall
 
         // Draw the wall
-        glBindVertexArray(wallVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+
 
                 // be sure to activate shader when setting uniforms/drawing objects
         wallShader.use();
@@ -565,8 +584,8 @@ int main()
         // spotLight
         wallShader.setVec3("spotLight.position", camera.Position);
         wallShader.setVec3("spotLight.direction", camera.Front);
-        wallShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-        wallShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        wallShader.setVec3("spotLight.ambient", 1.0f, 1.0f, 1.0f);
+        wallShader.setVec3("spotLight.diffuse", 2.0f, 2.0f, 2.0f);
         wallShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
         wallShader.setFloat("spotLight.constant", 1.0f);
         wallShader.setFloat("spotLight.linear", 0.09f);
@@ -574,14 +593,25 @@ int main()
         wallShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
         wallShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
-        for (unsigned int i = 0; i < 4; i++) {
-             model = glm::mat4(1.0f);
-             model = glm::translate(model, wallPositions[i]);
-             model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-             lightCubeShader.setMat4("model", model);
-             glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
 
+        glBindVertexArray(wallVAO);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(0 * sizeof(unsigned int)));  // Front wall
+
+        // Left wall (next 6 indices, starting from index 6)
+        wallShader.setMat4("model", model);  // Use same or different transformation
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6 * sizeof(unsigned int)));  // Left wall
+
+        // Right wall (next 6 indices, starting from index 12)
+        wallShader.setMat4("model", model);  // Use same or different transformation
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(12 * sizeof(unsigned int)));  // Right wall
+
+        // Back wall (next 6 indices, starting from index 18)
+        wallShader.setMat4("model", model);  // Use same or different transformation
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(18 * sizeof(unsigned int)));  // Back wall
+
+        // Unbind the VAO after rendering
+        glBindVertexArray(0);
 
 
 
@@ -686,15 +716,20 @@ int main()
         lightingShader.setMat4("model", model);
 
         glm::mat4 backpackModel = glm::mat4(1.0f);
-        backpackModel = glm::translate(backpackModel, glm::vec3(1.0f, 0.0f, 0.0f));
+        backpackModel = glm::translate(backpackModel, glm::vec3(1.0f, 0.0f, -15.0f));
         backpackModel = glm::scale(backpackModel, glm::vec3(0.1f, 0.1f, 0.1f));
         backpackShader.setMat4("model", backpackModel);
         backpack.render(backpackShader);
 
         glm::mat4 moaiModel = glm::mat4(1.0f);
-        moaiModel = glm::translate(moaiModel, glm::vec3(2.0f, 0.0f, 0.0f));
-        moaiModel = glm::scale(moaiModel, glm::vec3(0.1f, 0.1f, 0.1f));
-        moaiModel = applyRotationX(moaiModel,90);
+        moaiModel = applyRotationX(moaiModel, 90);
+        if (isRedPhase)
+            moaiModel = applyRotationY(moaiModel,  180);
+        moaiModel = glm::scale(moaiModel, glm::vec3(0.5f, 0.4f, 0.5f));
+        moaiModel = glm::translate(moaiModel, glm::vec3(0.0f, 10.0f, -2.0f));
+
+
+
         moaiShader.setMat4("model", moaiModel);
         moai.render(moaiShader);
 
