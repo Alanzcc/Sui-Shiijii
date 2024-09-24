@@ -74,10 +74,12 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
+
     // build and compile our shader zprogram
     // ------------------------------------
     Shader lightingShader("/home/seth/Progetti/Sui-Shiijii/shaders/light_casters.vert",
@@ -86,8 +88,13 @@ int main()
         "/home/seth/Progetti/Sui-Shiijii/shaders/light_cube.frag");
     Shader backpackShader("/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.vert",
         "/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.frag");
-    Shader floorShader("/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.vert",
+    Shader moaiShader("/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.vert",
         "/home/seth/Progetti/Sui-Shiijii/shaders/model_loading.frag");
+    Shader floorShader("/home/seth/Progetti/Sui-Shiijii/shaders/light_casters.vert",
+        "/home/seth/Progetti/Sui-Shiijii/shaders/light_casters.frag");
+    Shader wallShader("/home/seth/Progetti/Sui-Shiijii/shaders/light_casters.vert",
+        "/home/seth/Progetti/Sui-Shiijii/shaders/light_casters.frag");
+
 
     // load models
     ObjRenderer backpack(
@@ -97,25 +104,58 @@ int main()
         30);
     backpackShader.use();
     backpackShader.setInt("material.diffuse", 0);
+    ObjRenderer moai(
+        "/home/seth/Progetti/Sui-Shiijii/objects/FabConvert.com_base mesh sculpt 2.obj",
+        "/home/seth/Progetti/Sui-Shiijii/textures/Untitled.jpg",
+        glm::vec3(0.5, 0.7, 0.3),
+        30);
+    moaiShader.use();
+    moaiShader.setInt("material.diffuse", 0);
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-
-    // Vertex data for a floor plane (a rectangle)
+    // Vertex data for a wall plane
     // Positions            // Normals        // Texture Coords
+    float wall[] = {
+        -1.0f, 0.0f, 0.0f,    0.0f, 0.0f, 1.0f,  0.0f, 0.0f, // Bottom-left
+         1.0f, 0.0f, 0.0f,    0.0f, 0.0f, 1.0f,  1.0f, 0.0f, // Bottom-right
+         1.0f, 1.0f, 0.0f,    0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // Top-right
+        -1.0f, 1.0f, 0.0f,    0.0f, 0.0f, 1.0f,  0.0f, 1.0f  // Top-left
+
+        -5.0f, 0.0f,  5.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
+        -5.0f, 0.0f, -5.0f,   1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
+        -5.0f, 5.0f, -5.0f,   1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // Top-right
+        -5.0f, 5.0f,  5.0f,   1.0f, 0.0f, 0.0f,  0.0f, 1.0f,  // Top-left
+
+        5.0f, 0.0f, -5.0f,  -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
+        5.0f, 0.0f,  5.0f,  -1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
+        5.0f, 5.0f,  5.0f,  -1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // Top-right
+        5.0f, 5.0f, -5.0f,  -1.0f, 0.0f, 0.0f,  0.0f, 1.0f  // Top-left
+
+        -5.0f, 0.0f, -5.0f,   0.0f, 0.0f, -1.0f,  0.0f, 0.0f, // Bottom-left
+        5.0f, 0.0f, -5.0f,   0.0f, 0.0f, -1.0f,  1.0f, 0.0f, // Bottom-right
+        5.0f, 5.0f, -5.0f,   0.0f, 0.0f, -1.0f,  1.0f, 1.0f, // Top-right
+        -5.0f, 5.0f, -5.0f,   0.0f, 0.0f, -1.0f,  0.0f, 1.0f,  // Top-left
+    };
+    // Vertex data for a floor plane
     float tiles[] = {
-        // Positions        // Normals         // Texture Coords
         -1.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
          1.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
          1.0f, 0.0f,  1.0f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f, // Top-right
         -1.0f, 0.0f,  1.0f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f  // Top-left
     };
-
     // Indices for the plane (two triangles)
     unsigned int indices[] = {
         0, 1, 2, // First triangle
         0, 2, 3  // Second triangle
     };
+    glm::vec3 wallPositions[] = {
+        glm::vec3( 1.0f,  2.0f,  2.0f),
+        glm::vec3( 2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3( 0.0f,  0.0f, -3.0f)
+    };
+
 
     float vertices[] = {
         // positions          // normals           // texture coords
@@ -176,12 +216,14 @@ int main()
     };
     // positions of the point lights
     glm::vec3 pointLightPositions[] = {
-        glm::vec3( 0.7f,  0.2f,  2.0f),
+        glm::vec3( 1.0f,  2.0f,  2.0f),
         glm::vec3( 2.3f, -3.3f, -4.0f),
         glm::vec3(-4.0f,  2.0f, -12.0f),
         glm::vec3( 0.0f,  0.0f, -3.0f)
     };
-    // first, configure the cube's VAO (and VBO)
+
+    //----------------------------------------------------------------------------------------------------------
+    // Containers and light cubes setup
     unsigned int VBO, cubeVAO;
     glGenVertexArrays(1, &cubeVAO);
     glGenBuffers(1, &VBO);
@@ -206,8 +248,9 @@ int main()
     // note that we update the lamp's position attribute's stride to reflect the updated buffer data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    //-----------------------------------------------------------------------------------------------------------
 
-        // Floor setup
+    // Floor setup
     unsigned int floorVBO, floorVAO, floorEBO;
     glGenVertexArrays(1, &floorVAO);
     glGenBuffers(1, &floorVBO);
@@ -235,10 +278,36 @@ int main()
     glBindVertexArray(0);
 
 
+    // Floor setup
+    unsigned int wallVBO, wallVAO, wallEBO;
+    glGenVertexArrays(1, &wallVAO);
+    glGenBuffers(1, &wallVBO);
+    glGenBuffers(1, &wallEBO);
 
+    // Bind the wall VAO
+    glBindVertexArray(wallVAO);
+
+    // Bind and set wall VBO and EBO
+    glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(tiles), tiles, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wallEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Set vertex attributes for position, normal, and texture coordinates
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // Unbind VAO
+    glBindVertexArray(0);
 
     // load textures (we now use a utility function to keep the code more organized)
     // -----------------------------------------------------------------------------
+    unsigned int wallTex = ObjRenderer::loadTexture("/home/seth/Progetti/Sui-Shiijii/textures/seamless-wood-planks-3-354038619.jpg");
     unsigned int floorTex = ObjRenderer::loadTexture("/home/seth/Progetti/Sui-Shiijii/textures/tileable_concrete_tiles_texture-1500331845.jpg");
     unsigned int diffuseMap = ObjRenderer::loadTexture("/home/seth/Progetti/Sui-Shiijii/textures/container2.png");
     unsigned int specularMap = ObjRenderer::loadTexture("/home/seth/Progetti/Sui-Shiijii/textures/container2_specular.png");
@@ -309,8 +378,8 @@ int main()
 
         // Set transformation matrices for the floor
         glm::mat4 model = glm::mat4(1.0f);  // Identity matrix for the floor
-        model = glm::scale(model, glm::vec3(10.0f, 1.0f, 10.0f)); // Scale the floor
-        model = glm::translate(model, glm::vec3(1.0f, -3.0, 1.0f));
+        model = glm::scale(model, glm::vec3(11.0f, 1.0f, 10.0f)); // Scale the floor
+        model = glm::translate(model, glm::vec3(0.0f, -2.0, -0.5f));
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         floorShader.setMat4("model", model);
@@ -325,6 +394,203 @@ int main()
         glBindVertexArray(floorVAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+
+                // be sure to activate shader when setting uniforms/drawing objects
+        floorShader.use();
+        floorShader.setVec3("light.position", camera.Position);
+        floorShader.setVec3("light.direction", camera.Front);
+        floorShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+        floorShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+        floorShader.setVec3("viewPos", camera.Position);
+        // light properties
+        floorShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+        // we configure the diffuse intensity slightly higher; the right lighting conditions differ with each lighting method and environment.
+        // each environment and lighting type requires some tweaking to get the best out of your environment.
+        floorShader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
+        floorShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        floorShader.setFloat("light.constant", 1.0f);
+        floorShader.setFloat("light.linear", 0.09f);
+        floorShader.setFloat("light.quadratic", 0.032f);
+
+        // material properties
+        floorShader.setFloat("material.shininess", 32.0f);
+
+        /*
+           Here we set all the uniforms for the 5/6 types of lights we have. We have to set them manually and index
+           the proper PointLight struct in the array to set each uniform variable. This can be done more code-friendly
+           by defining light types as classes and set their values in there, or by using a more efficient uniform approach
+           by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
+        */
+        // directional light
+        floorShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        floorShader.setVec3("dirLight.ambient",  0.1f, 0.24f, 0.14f);
+        floorShader.setVec3("dirLight.diffuse", 0.7f, 0.42f, 0.26f);
+        floorShader.setVec3("dirLight.specular",  0.5f, 0.5f, 0.5f);
+        // point light 1
+        floorShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+        floorShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+        floorShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+        floorShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        floorShader.setFloat("pointLights[0].constant", 1.0f);
+        floorShader.setFloat("pointLights[0].linear", 0.09f);
+        floorShader.setFloat("pointLights[0].quadratic", 0.032f);
+        // point light 2
+        floorShader.setVec3("pointLights[1].position", pointLightPositions[1]);
+        floorShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+        floorShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+        floorShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+        floorShader.setFloat("pointLights[1].constant", 1.0f);
+        floorShader.setFloat("pointLights[1].linear", 0.09f);
+        floorShader.setFloat("pointLights[1].quadratic", 0.032f);
+        // point light 3
+        floorShader.setVec3("pointLights[2].position", pointLightPositions[2]);
+        floorShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+        floorShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+        floorShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+        floorShader.setFloat("pointLights[2].constant", 1.0f);
+        floorShader.setFloat("pointLights[2].linear", 0.09f);
+        floorShader.setFloat("pointLights[2].quadratic", 0.032f);
+        // point light 4
+        floorShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+        floorShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+        floorShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+        floorShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+        floorShader.setFloat("pointLights[3].constant", 1.0f);
+        floorShader.setFloat("pointLights[3].linear", 0.09f);
+        floorShader.setFloat("pointLights[3].quadratic", 0.032f);
+        // spotLight
+        floorShader.setVec3("spotLight.position", camera.Position);
+        floorShader.setVec3("spotLight.direction", camera.Front);
+        floorShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        floorShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        floorShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        floorShader.setFloat("spotLight.constant", 1.0f);
+        floorShader.setFloat("spotLight.linear", 0.09f);
+        floorShader.setFloat("spotLight.quadratic", 0.032f);
+        floorShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        floorShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
+
+
+
+
+
+
+
+
+        // Render the walls
+        wallShader.use();
+
+        // Set transformation matrices for the wall
+        model = glm::mat4(1.0f);  // Identity matrix for the wall
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)); // Scale the wall
+        model = applyRotationX(model, 90);
+        model = glm::translate(model, glm::vec3(0.0f, -2.0, -0.5f));
+        wallShader.setMat4("model", model);
+        wallShader.setMat4("view", view);
+        wallShader.setMat4("projection", projection);
+
+        // Bind wall texture if necessary
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, wallTex);  // Assuming you want to apply a texture to the wall
+
+        // Draw the wall
+        glBindVertexArray(wallVAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+                // be sure to activate shader when setting uniforms/drawing objects
+        wallShader.use();
+        wallShader.setVec3("light.position", camera.Position);
+        wallShader.setVec3("light.direction", camera.Front);
+        wallShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+        wallShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+        wallShader.setVec3("viewPos", camera.Position);
+        // light properties
+        wallShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+        // we configure the diffuse intensity slightly higher; the right lighting conditions differ with each lighting method and environment.
+        // each environment and lighting type requires some tweaking to get the best out of your environment.
+        wallShader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
+        wallShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        wallShader.setFloat("light.constant", 1.0f);
+        wallShader.setFloat("light.linear", 0.09f);
+        wallShader.setFloat("light.quadratic", 0.032f);
+
+        // material properties
+        wallShader.setFloat("material.shininess", 32.0f);
+
+        /*
+           Here we set all the uniforms for the 5/6 types of lights we have. We have to set them manually and index
+           the proper PointLight struct in the array to set each uniform variable. This can be done more code-friendly
+           by defining light types as classes and set their values in there, or by using a more efficient uniform approach
+           by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
+        */
+        // directional light
+        wallShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        wallShader.setVec3("dirLight.ambient",  0.1f, 0.24f, 0.14f);
+        wallShader.setVec3("dirLight.diffuse", 0.7f, 0.42f, 0.26f);
+        wallShader.setVec3("dirLight.specular",  0.5f, 0.5f, 0.5f);
+        // point light 1
+        wallShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+        wallShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+        wallShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+        wallShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        wallShader.setFloat("pointLights[0].constant", 1.0f);
+        wallShader.setFloat("pointLights[0].linear", 0.09f);
+        wallShader.setFloat("pointLights[0].quadratic", 0.032f);
+        // point light 2
+        wallShader.setVec3("pointLights[1].position", pointLightPositions[1]);
+        wallShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+        wallShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+        wallShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+        wallShader.setFloat("pointLights[1].constant", 1.0f);
+        wallShader.setFloat("pointLights[1].linear", 0.09f);
+        wallShader.setFloat("pointLights[1].quadratic", 0.032f);
+        // point light 3
+        wallShader.setVec3("pointLights[2].position", pointLightPositions[2]);
+        wallShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+        wallShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+        wallShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+        wallShader.setFloat("pointLights[2].constant", 1.0f);
+        wallShader.setFloat("pointLights[2].linear", 0.09f);
+        wallShader.setFloat("pointLights[2].quadratic", 0.032f);
+        // point light 4
+        wallShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+        wallShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+        wallShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+        wallShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+        wallShader.setFloat("pointLights[3].constant", 1.0f);
+        wallShader.setFloat("pointLights[3].linear", 0.09f);
+        wallShader.setFloat("pointLights[3].quadratic", 0.032f);
+        // spotLight
+        wallShader.setVec3("spotLight.position", camera.Position);
+        wallShader.setVec3("spotLight.direction", camera.Front);
+        wallShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        wallShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        wallShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        wallShader.setFloat("spotLight.constant", 1.0f);
+        wallShader.setFloat("spotLight.linear", 0.09f);
+        wallShader.setFloat("spotLight.quadratic", 0.032f);
+        wallShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        wallShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
+        for (unsigned int i = 0; i < 4; i++) {
+             model = glm::mat4(1.0f);
+             model = glm::translate(model, wallPositions[i]);
+             model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+             lightCubeShader.setMat4("model", model);
+             glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -405,28 +671,32 @@ int main()
 
 
         // view/projection transformations
-        //glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-       // glm::mat4 view = camera.GetViewMatrix();
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat4("view", view);
 
         backpackShader.setMat4("projection", projection);
         backpackShader.setMat4("view", view);
 
+        moaiShader.setMat4("projection", projection);
+        moaiShader.setMat4("view", view);
+
         // world transformation
-        // glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         lightingShader.setMat4("model", model);
 
         glm::mat4 backpackModel = glm::mat4(1.0f);
-        backpackModel = glm::translate(backpackModel, glm::vec3(1.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        if (isRed==true)
-            backpackModel = applyRotationY(backpackModel, 60.0);
+        backpackModel = glm::translate(backpackModel, glm::vec3(1.0f, 0.0f, 0.0f));
         backpackModel = glm::scale(backpackModel, glm::vec3(0.1f, 0.1f, 0.1f));
-
         backpackShader.setMat4("model", backpackModel);
         backpack.render(backpackShader);
+
+        glm::mat4 moaiModel = glm::mat4(1.0f);
+        moaiModel = glm::translate(moaiModel, glm::vec3(2.0f, 0.0f, 0.0f));
+        moaiModel = glm::scale(moaiModel, glm::vec3(0.1f, 0.1f, 0.1f));
+        moaiModel = applyRotationX(moaiModel,90);
+        moaiShader.setMat4("model", moaiModel);
+        moai.render(moaiShader);
 
         // render containers
         glBindVertexArray(cubeVAO);
@@ -444,7 +714,6 @@ int main()
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            model = applyRotationZ(model, currentFrame);
             //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             lightingShader.setMat4("model", model);
 

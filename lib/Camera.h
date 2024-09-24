@@ -133,6 +133,8 @@ public:
             // Clamp newX within bounds
             Position.x = glm::clamp(newX, minX, maxX);
         }
+        // Restore the Y position
+        Position.y = currentY;
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
